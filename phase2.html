@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<head>
+    <title>Stimulus Chatbot</title>
+
+ <style>
+  
+    body {
+      display: grid;
+      background: #e2d2ed;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .chat-container {
+      width: 400px;
+      height: 600px;
+      background: rgb(175, 161, 199);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 5px #474646;
+      border: 5px solid #1e3e63;
+
+    }
+    .chat-history {
+      flex: 1;
+      padding: 15px;
+      overflow-y: scroll;
+      border-bottom: 1px solid #ddd;
+      border-radius: 10px;
+
+    }
+
+    .bot {
+      text-align: left;
+      background: #e0e0e0;
+      border: 1px solid #1e3e63;
+      padding: 10px;
+      border-radius: 10px;
+      display: inline-block;
+      max-width: 65%;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      margin-bottom: 10px;
+      font-family: Arial, Helvetica, sans-serif;
+
+    }
+
+    .user {
+      background: #4a90e2;
+      color: white;
+      border: 1px solid #1e3e63;
+      padding: 10px;
+      border-radius: 10px;
+      display: inline-block;
+      max-width: 65%;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      margin-bottom: 10px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .user-container {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+
+    .input-container {
+      display: flex;
+      border-radius: 20px;
+
+    }
+    input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-top: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 15px;
+      border-radius: 5px;
+      border: none;
+      background: #4a90e2;
+      color: white;
+      cursor: pointer;
+    }
+    .quick-reply {
+      background: #fff;
+      color: #4a90e2;
+      border: 1px solid #4a90e2;
+      border-radius: 20px;
+      padding: 5px 10px;
+      margin: 3px;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-block;
+    }
+    .typing-indicator {
+      font-size: 12px;
+      font-style: italic;
+      padding-left: 10px;
+    }
+  </style>
+</head>
+<body>
+   <div class="chat-container">
+    <div class="chat-history" id="chat-history"></div>
+    <div class="input-container">
+      <input type="text" id="input" placeholder="Ask something...">
+      <button onclick=sendMessage()>Send</button>
+    </div>
+  </div>
+      <script>
+
+    const map = [
+        {
+        keywords: ["what is stimulus", "overview", "about", "what's stimulus", "whats stimulus"],
+        response: "Founded in 2025, STIMULUS is a forward-thinking consulting firm helping businesses grow and hire smarter. Learn more at <a href='https://stimulus.org.in' target='_blank'>stimulus.org.in</a>.",
+        quickReplies: ["How do I register?", "What is the mission of Stimulus?"]
+        },
+
+        {
+        keywords: ["price", "cost", "fee"],
+        response: "You can request a consulation for free on our website at <a href='https://stimulus.org.in/contact' target='_blank'>stimulus.org.in/contact</a>.",
+        quickReplies: ["How do I register?", "How can I get in contact?"]
+        },
+
+        {
+        keywords: ["register", "sign up", "signup"],
+        response: "You can register on our website at <a href='https://stimulus.org.in/contact' target='_blank'>stimulus.org.in/contact</a>.",
+        quickReplies: ["What services do you provide?", "How much does it cost?"]
+        },
+
+        {
+        keywords: ["contact", "email", "phone"],
+        response: "You can contact us on our website at <a href='https://stimulus.org.in/contact' target='_blank'>stimulus.org.in/contact</a>.",
+        quickReplies: ["How do I register?", "Where can I visit Stimulus?"]
+        },
+
+        {
+        keywords: ["service", "provide"],
+        response: "We offer business consulting, job recruitment, and business advisory services.",
+        flow: "Would you like to more about one of them?",
+        quickReplies: ["Business Consulting", "Job Recruitment", "Business Advisory"]
+        },
+
+        {
+        keywords: ["consulting"],
+        response: "We focus on Market & Strategy Analysis, Operational Efficiency, Organizational Design, Financial Planning, and Tech Integration.",
+        quickReplies: ["Job Recruitment", "Business Advisory"]
+        },
+
+        {
+        keywords: ["job", "recruitment"],
+        response: "We match companies with candidates, helping employers hire faster while offering candidates better job opportunities.",
+        quickReplies: ["Business Consulting", "Business Advisory"]
+        },
+
+        {
+        keywords: ["advisory"],
+        response: "We focus on Market Entry, M&A Due Diligence, Risk & Compliance, Expansion Plans, and Succession & Crisis Management.",
+        quickReplies: ["Business Consulting", "Job Recruitment"]
+        },
+        
+        {
+        keywords: ["hours", "open", "time", "timing"],
+        response: "We are open from 9 A.M. to 6 P.M. Monday through Friday and from 10 A.M. to 4 P.M. on Saturdays.",
+        quickReplies: ["Where can I visit Stimulus?", "How can I get in contact?"]
+        },
+
+        {
+        keywords: ["address", "location", "where", "place", "visit"],
+        response: "Stimulus's headquarter is at 601, Dreams Avenue, University Road Kolhapur 416004, Maharashtra",
+        flow: "Do you want to know the hours we are open?",
+        quickReplies: ["What are your business hours?", "How can I get in contact?"]
+        },
+
+        {
+        keywords: ["mission", "purpose", "vision"],
+        response: "We hope to empower businesses and professionals through smart strategy and meaningful connections.",
+        quickReplies: ["What is Stimulus", "How can I get in contact?"]
+        },
+    ]
+
+
+
+    addMessage('Hey there! Welcome to the Stimulus Chat Bot. How can I help you today?', 'bot')
+
+    var user = document.getElementById("input");
+    user.addEventListener("keydown", function (e) {
+        if (e.code === "Enter") {
+            sendMessage();
+        }
+    });
+
+    function sendMessage(text = null) {
+        const message = text || document.getElementById('input').value.trim();
+        if (!message) return;
+
+        const replies = document.querySelectorAll(".quick-reply");
+        replies.forEach(element => element.remove());
+
+        addMessage(message, 'user');
+
+        const lowerMsg = message.toLowerCase();
+        let mapEntry;
+        let found = false;
+
+        for (let i = 0; i<map.length; i++){
+            let entry = map[i];
+            for (let j = 0; j<entry.keywords.length; j++){
+                if (lowerMsg.includes(entry.keywords[j])){
+                    mapEntry = entry;
+                    found = true;
+                    break;
+                }
+            }
+            if (found){
+                break;
+            }
+        }
+        let response
+        let quickReplies
+        let flow
+        if (mapEntry){
+            response = mapEntry.response
+            quickReplies = mapEntry.quickReplies
+            flow = mapEntry.flow
+        }
+
+        else {
+            response = "Sorry, I don't understand.";
+
+        }
+        input.value = '';
+        setTimeout(() => {
+          addMessage(response, 'bot');
+          const indicator = document.querySelectorAll(".typing-indicator");
+          indicator.forEach(element => element.remove());
+          if (flow){
+            setTimeout(() =>{
+              addMessage(flow, 'bot');
+              if(quickReplies){
+                showQuickReplies(quickReplies)
+              }
+              const indicator = document.querySelectorAll(".typing-indicator");
+              indicator.forEach(element => element.remove());
+            }, 750);
+            showTypingIndicator() 
+          }
+          else{
+            if(quickReplies){
+              showQuickReplies(quickReplies)
+            }
+          }
+
+        }, 750)
+        showTypingIndicator() 
+    }
+
+    function addMessage(text, sender) {
+      const chat = document.getElementById('chat-history');
+      const wrapper = document.createElement('div');
+      wrapper.className = sender + '-container';
+
+      const msg = document.createElement('div');
+      msg.className = sender;
+      msg.innerHTML = text;
+
+      wrapper.appendChild(msg);
+      chat.appendChild(wrapper);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function showQuickReplies(options){
+      const chat = document.getElementById("chat-history");
+      const wrapper = document.createElement("div");
+      wrapper.className = "bot-container";
+
+      options.forEach(element => {
+        const button = document.createElement("div");
+        button.className = "quick-reply";
+        button.textContent = element;
+        button.onclick = () => sendMessage(element);
+        wrapper.appendChild(button);
+      })
+      chat.appendChild(wrapper);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+      const chat = document.getElementById("chat-history");
+      const typing = document.createElement("div");
+      typing.className = "typing-indicator";
+      typing.textContent = "Bot is typing...";
+      chat.appendChild(typing);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+  </script>
+
+
+</body>
+</html>
