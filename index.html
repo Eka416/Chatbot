@@ -20,8 +20,18 @@
       flex-direction: column;
       box-shadow: 0 0 5px #474646;
       border: 5px solid #1e3e63;
-
     }
+
+    .chat-header {
+    background: #1e3e63;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    padding: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    font-family: Arial, Helvetica, sans-serif;
+  }
     .chat-history {
       flex: 1;
       padding: 15px;
@@ -107,6 +117,7 @@
 </head>
 <body>
    <div class="chat-container">
+    <div class="chat-header">💬 Stimulus Chatbot</div>
     <div class="chat-history" id="chat-history"></div>
     <div class="input-container">
       <input type="text" id="input" placeholder="Ask something...">
@@ -305,3 +316,4 @@
 
 </body>
 </html>
+
